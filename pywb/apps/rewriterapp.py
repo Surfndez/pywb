@@ -281,13 +281,16 @@ class RewriterApp(object):
                                                  headers=headers)
             else:
                 wb_url.mod = pref_mod
+
         else:
             response = self.handle_custom_response(environ, wb_url,
                                                    full_prefix, host_prefix,
                                                    kwargs)
 
         if response:
-            return self.format_response(response, wb_url, full_prefix, is_timegate, is_proxy)
+            # don't return top-frame response for timegate with exact redirects
+            if not is_timegate or not redirect_to_exact:
+                return self.format_response(response, wb_url, full_prefix, is_timegate, is_proxy)
 
         if is_proxy:
             environ['pywb_proxy_magic'] = environ['wsgiprox.proxy_host']
@@ -376,14 +379,13 @@ class RewriterApp(object):
         if target_uri != wb_url.url and cdx.get('is_fuzzy') == '1':
             set_content_loc = True
 
-        # if redir to exact, redir if url or ts are different
-        if redirect_to_exact:
-            if (set_content_loc or
-                (wb_url.timestamp != cdx.get('timestamp') and not cdx.get('is_live'))):
-
+        # if redirect to exact timestamp, bit only if not live
+        if redirect_to_exact and not cdx.get('is_live'):
+            if set_content_loc or is_timegate or wb_url.timestamp != cdx.get('timestamp'):
                 new_url = urlrewriter.get_new_url(url=target_uri,
                                                   timestamp=cdx['timestamp'],
                                                   mod=wb_url.mod)
+
 
                 resp = WbResponse.redir_response(new_url, '307 Temporary Redirect')
                 if self.enable_memento:
@@ -393,7 +395,8 @@ class RewriterApp(object):
                                                 resp.status_headers,
                                                 is_timegate, is_proxy,
                                                 pref_applied=pref_applied,
-                                                mod=pref_mod)
+                                                mod=pref_mod,
+                                                is_memento=False)
 
                     else:
                         resp.status_headers['Link'] = MementoUtils.make_link(target_uri, 'original')
@@ -478,21 +481,22 @@ class RewriterApp(object):
 
     def _add_memento_links(self, url, full_prefix, memento_dt, memento_ts,
                            status_headers, is_timegate, is_proxy, coll=None,
-                           pref_applied=None, mod=None):
+                           pref_applied=None, mod=None, is_memento=True):
 
-        mod = mod or self.replay_mod
+        replay_mod = mod or self.replay_mod
 
         # memento url + header
         if not memento_dt and memento_ts:
             memento_dt = timestamp_to_http_date(memento_ts)
 
         if memento_dt:
-            status_headers.headers.append(('Memento-Datetime', memento_dt))
+            if is_memento:
+                status_headers.headers.append(('Memento-Datetime', memento_dt))
 
             if is_proxy:
                 memento_url = url
             else:
-                memento_url = full_prefix + memento_ts + mod
+                memento_url = full_prefix + memento_ts + replay_mod
                 memento_url += '/' + url
         else:
             memento_url = None
@@ -526,6 +530,7 @@ class RewriterApp(object):
     def _get_timegate_timemap(self, url, full_prefix, mod):
         # timegate url
         timegate_url = full_prefix
+        mod = ''
         if mod:
             timegate_url += mod + '/'
 
@@ -620,7 +625,7 @@ class RewriterApp(object):
             status = str(res.status_code) + ' ' + res.reason
 
             if res.status_code == 200 and output == 'link':
-                timegate, timemap = self._get_timegate_timemap(wb_url.url, full_prefix, self.replay_mod)
+                timegate, timemap = self._get_timegate_timemap(wb_url.url, full_prefix, wb_url.mod)
 
                 text = MementoUtils.wrap_timemap_header(wb_url.url,
                                                         timegate,
