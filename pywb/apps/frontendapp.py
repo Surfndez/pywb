@@ -288,6 +288,8 @@ class FrontEndApp(object):
 
         if timemap_output:
             metadata['output'] = timemap_output
+            # ensure that the timemap path information is not included
+            wb_url_str = wb_url_str.replace('timemap/{0}/'.format(timemap_output), '')
 
         response = self.rewriterapp.render_content(wb_url_str, metadata, environ)
         return response
