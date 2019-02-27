@@ -224,9 +224,9 @@ class XmlQueryIndexSource(BaseIndexSource):
         matchType = params.get('matchType', 'exact')
 
         if matchType == 'exact':
-            query_url = self.query_api_url + '?q=' + quote_plus('type:urlquery+url:' + quote_plus(url))
+            query_url = self.query_api_url + '?q=' + quote_plus('type:urlquery url:' + quote_plus(url))
         elif matchType == 'prefix':
-            query_url = self.query_api_url + '?q=' + quote_plus('type:prefixquery+url:' + quote_plus(url))
+            query_url = self.query_api_url + '?q=' + quote_plus('type:prefixquery url:' + quote_plus(url))
         else:
             raise BadRequestException('matchType={0} is not supported'.format(matchType=matchType))
 
