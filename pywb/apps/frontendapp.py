@@ -22,7 +22,7 @@ from pywb.warcserver.warcserver import WarcServer
 from pywb.rewrite.templateview import BaseInsertView
 
 from pywb.apps.static_handler import StaticHandler
-from pywb.apps.rewriterapp import RewriterApp
+from pywb.apps.rewriterapp import RewriterApp, UpstreamException
 from pywb.apps.wbrequestresponse import WbResponse
 
 import os
@@ -449,19 +449,15 @@ class FrontEndApp(object):
         return (coll in self.warcserver.list_fixed_routes() or
                 coll in self.warcserver.list_dynamic_routes())
 
-<<<<<<< HEAD
     def raise_not_found(self, environ, err_type, url):
-        raise AppPageNotFound(err_type, url)
-=======
-    def raise_not_found(self, environ, msg):
         """Utility function for raising a werkzeug.exceptions.NotFound execption with the supplied WSGI environment
         and message.
 
         :param dict environ: The WSGI environment dictionary for the request
-        :param str msg: The error message
+        :param str err_type: The identifier for type of error that occured
+        :param str url: The url of the archived page that was requested
         """
-        raise NotFound(response=self.rewriterapp._error_response(environ, msg))
->>>>>>> master
+        raise AppPageNotFound(err_type, url)
 
     def _check_refer_redirect(self, environ):
         """Returns a WbResponse for a HTTP 307 redirection if the HTTP referer header is the same as the HTTP host header
@@ -513,9 +509,6 @@ class FrontEndApp(object):
             endpoint, args = urls.match()
             # store original script_name (original prefix) before modifications are made
             environ['pywb.app_prefix'] = environ.get('SCRIPT_NAME')
-
-            # store original script_name (original prefix) before modifications are made
-            environ['ORIG_SCRIPT_NAME'] = environ.get('SCRIPT_NAME')
 
             lang = args.pop('lang', '')
             if lang:

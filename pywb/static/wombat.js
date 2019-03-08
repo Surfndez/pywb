@@ -2216,7 +2216,7 @@ var _WBWombat = function($wbwindow, wbinfo) {
         override_attr($wbwindow.HTMLEmbedElement.prototype, "src", "oe_");
         override_attr($wbwindow.HTMLObjectElement.prototype, "data", "oe_");
 
-        override_attr($wbwindow.HTMLBaseElement.prototype, "href", "ba_");
+        override_attr($wbwindow.HTMLBaseElement.prototype, "href", "mp_");
         override_attr($wbwindow.HTMLMetaElement.prototype, "content", "mp_");
 
         override_attr($wbwindow.HTMLFormElement.prototype, "action", "mp_");
@@ -3558,8 +3558,7 @@ var _WBWombat = function($wbwindow, wbinfo) {
         var prefix = use_rel ? wb_rel_prefix : wb_abs_prefix;
 
         if (mod == undefined) {
-            //mod = wb_info.mod;
-            mod = "je_";
+            mod = wb_info.mod;
         }
 
         // if live, don't add the timestamp
