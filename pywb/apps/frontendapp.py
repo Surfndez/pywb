@@ -15,7 +15,7 @@ from pywb.recorder.recorderapp import RecorderApp
 from pywb.utils.loaders import load_yaml_config
 from pywb.utils.geventserver import GeventServer
 from pywb.utils.io import StreamIter
-from pywb.utils.wbexception import NotFoundException, WbException
+from pywb.utils.wbexception import NotFoundException, WbException, AppPageNotFound
 
 from pywb.warcserver.warcserver import WarcServer
 
@@ -389,12 +389,7 @@ class FrontEndApp(object):
             # ensure that the timemap path information is not included
             wb_url_str = wb_url_str.replace('timemap/{0}/'.format(timemap_output), '')
 
-        try:
-            response = self.rewriterapp.render_content(wb_url_str, metadata, environ)
-        except UpstreamException as ue:
-            response = self.rewriterapp.handle_error(environ, ue)
-            raise HTTPException(response=response)
-
+        response = self.rewriterapp.render_content(wb_url_str, metadata, environ)
         return response
 
     def setup_paths(self, environ, coll, record=False):
@@ -639,13 +634,6 @@ class FrontEndApp(object):
         if isinstance(response, WbResponse):
             response.add_access_control_headers(env=env)
         return response
-
-
-# ============================================================================
-class AppPageNotFound(WbException):
-    @property
-    def status_code(self):
-        return 404
 
 
 # ============================================================================

@@ -9,6 +9,7 @@ import os
 import hmac
 import requests
 import yaml
+from yaml import Loader
 
 import six
 from six.moves.urllib.parse import urljoin, unquote_plus, urlsplit, urlencode
@@ -16,7 +17,6 @@ from six.moves.urllib.parse import urljoin, unquote_plus, urlsplit, urlencode
 import time
 import pkgutil
 import base64
-import yaml
 import cgi
 import re
 
@@ -89,7 +89,7 @@ def load_yaml_config(config_file):
     configdata = None
     try:
         configdata = load(config_file)
-        config = yaml.load(configdata)
+        config = yaml.load(configdata, Loader=Loader)
     finally:
         if configdata:
             configdata.close()

@@ -7,7 +7,7 @@ from pywb.rewrite.default_rewriter import DefaultRewriter, RewriterWithJSProxy
 from pywb.rewrite.wburl import WbUrl
 from pywb.rewrite.url_rewriter import UrlRewriter, IdentityUrlRewriter
 
-from pywb.utils.wbexception import WbException, NotFoundException
+from pywb.utils.wbexception import WbException, NotFoundException, UpstreamException
 from pywb.utils.canonicalize import canonicalize
 from pywb.utils.loaders import extract_client_cookie
 from pywb.utils.io import BUFF_SIZE, OffsetLimitReader
@@ -29,22 +29,6 @@ from copy import copy
 
 import gevent
 import json
-
-
-# ============================================================================
-class UpstreamException(WbException):
-    def __init__(self, status_code, url, details):
-        super(UpstreamException, self).__init__(url=url, msg=details)
-        self._status_code = status_code
-
-    @property
-    def status_code(self):
-        return self._status_code
-
-
-# ============================================================================
-#class Rewriter(RewriteDASHMixin, RewriteAMFMixin, RewriteContent):
-#    pass
 
 
 # ============================================================================
