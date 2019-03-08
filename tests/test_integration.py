@@ -103,7 +103,8 @@ class TestWbIntegration(BaseConfigTest):
 
         assert '"20140127171238"' in resp.text, resp.text
         assert 'wombat.js' in resp.text
-        assert 'new _WBWombat' in resp.text, resp.text
+        assert '_WBWombatInit' in resp.text, resp.text
+        assert 'wbinfo.enable_auto_fetch = false;' in resp.text
         assert '/pywb/20140127171238{0}/http://www.iana.org/time-zones"'.format(fmod) in resp.text
 
         if fmod == 'mp_':
@@ -425,7 +426,7 @@ class TestWbIntegration(BaseConfigTest):
         assert resp.content_length > 0
 
     def test_static_nested_dir(self):
-        resp = self.testapp.get('/static/fonts/font-awesome/fontawesome-webfont.woff')
+        resp = self.testapp.get('/static/fonts/font-awesome/fa-brands-400.eot')
         assert resp.status_int == 200
         assert resp.content_length > 0
 

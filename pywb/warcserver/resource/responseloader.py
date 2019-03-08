@@ -108,7 +108,7 @@ class BaseLoader(object):
         # Try to set content-length, if it is available and valid
         try:
             content_len = int(content_len_str)
-        except (KeyError, TypeError):
+        except (ValueError, TypeError):
             content_len = -1
 
         if content_len >= 0:
@@ -355,6 +355,17 @@ class LiveWebLoader(BaseLoader):
                     v = self.unrewrite_header(cdx, v)
 
                 http_headers_buff += n + ': ' + v + '\r\n'
+
+            http_headers_buff += '\r\n'
+
+            try:
+                # http headers could be encoded as utf-8 (though non-standard)
+                # first try utf-8 encoding
+                http_headers_buff = http_headers_buff.encode('utf-8')
+            except:
+                # then, fall back to latin-1
+                http_headers_buff = http_headers_buff.encode('latin-1')
+
         except:  #pragma: no cover
         #PY 2
             resp_headers = orig_resp.msg.headers
@@ -376,8 +387,8 @@ class LiveWebLoader(BaseLoader):
                 else:
                     http_headers_buff += line
 
-        http_headers_buff += '\r\n'
-        http_headers_buff = http_headers_buff.encode('latin-1')
+            # if python2, already byte headers, so leave as is
+            http_headers_buff += '\r\n'
 
         try:
             fp = upstream_res._fp.fp

@@ -15,6 +15,9 @@ class WbException(Exception):
     def status(self):
         return str(self.status_code) + ' ' + HTTP_STATUS_CODES.get(self.status_code, 'Unknown Error')
 
+    def __repr__(self):
+        return "{0}('{1}',)".format(self.__class__.__name__,  self.msg)
+
 
 #=================================================================
 class AccessException(WbException):

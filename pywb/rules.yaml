@@ -86,6 +86,9 @@ rules:
         match: '("(?:cursor|cursorindex)":["\d\w]+)'
         find_all: true
 
+    - url_prefix: 'com,facebook)/ajax/pagelet/generic.php/profiletimeline'
+      fuzzy_lookup: 'com,facebook\)/.*[?&](__adt=[^&]+).*[&]data=(?:.*?(?:[&]|(profile_id|pagelet_token)[^,]+))'
+
     - url_prefix: 'com,facebook)/ajax/pagelet/generic.php/'
 
       #fuzzy_lookup: 'com,facebook\)/.*[?&]data=(.*?(?:[&]|query_type[^,]+))'
@@ -147,6 +150,12 @@ rules:
       fuzzy_lookup:
         match: '("q[\d]+":|after:\\"[^"]+)'
         find_all: true
+
+    - url_prefix: 'com,facebook)/pages_reaction_units/more'
+
+      fuzzy_lookup:
+          - page_id
+          - cursor
 
     - url_prefix: 'com,facebook)/'
 
@@ -322,6 +331,11 @@ rules:
           - videoFileId
           - signature
 
+    - url_prefix: 'net,akamaized,gcs-vimeo)/'
+
+      fuzzy_lookup:
+        match: '([/\d]+\.mp4)$'
+        replace: '.net/'
 
     # vine
     #=================================================================

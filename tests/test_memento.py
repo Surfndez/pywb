@@ -11,6 +11,9 @@ class TestMemento(MementoMixin, BaseConfigTest):
     def setup_class(cls):
         super(TestMemento, cls).setup_class('config_test.yaml')
 
+    def _timemap_get(self, url, **kwargs):
+        return self.testapp.get(url, extra_environ={'REQUEST_URI': url}, **kwargs)
+
     def _assert_memento(self, resp, url, ts, fmod, dt=''):
         dt = dt or timestamp_to_http_date(ts)
 
@@ -73,7 +76,7 @@ class TestMemento(MementoMixin, BaseConfigTest):
         # Body
         assert '"20140127171238"' in resp.text
         assert 'wombat.js' in resp.text
-        assert 'new _WBWombat' in resp.text, resp.text
+        assert 'WBWombatInit' in resp.text, resp.text
         assert '/pywb/20140127171238{0}/http://www.iana.org/time-zones"'.format(fmod) in resp.text
 
     def test_memento_at_timegate_latest(self, fmod):

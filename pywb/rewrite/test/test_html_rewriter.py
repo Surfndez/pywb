@@ -223,6 +223,14 @@ r"""
 >>> parse('<script>window.location = "http://example.com/a/b/c.html"</sc>')
 <script>window.WB_wombat_location = "/web/20131226101010/http://example.com/a/b/c.html"</sc></script>
 
+# SVG Script tag
+>>> parse('<script xlink:href="/js/scripts.js"/>')
+<script xlink:href="/web/20131226101010js_/http://example.com/js/scripts.js"/>
+
+# SVG Script tag with other elements
+>>> parse('<svg><defs><script xlink:href="/js/scripts.js"/><defs/><title>I\'m a title tag in svg!</title></svg>')
+<svg><defs><script xlink:href="/web/20131226101010js_/http://example.com/js/scripts.js"/><defs/><title>I'm a title tag in svg!</title></svg>
+
 >>> parse('<script>/*<![CDATA[*/window.location = "http://example.com/a/b/c.html;/*]]>*/"</script>')
 <script>/*<![CDATA[*/window.WB_wombat_location = "/web/20131226101010/http://example.com/a/b/c.html;/*]]>*/"</script>
 
@@ -277,6 +285,10 @@ r"""
 
 >>> parse('<!DOCTYPE html>Some Text without any tags <!-- comments -->', head_insert = '<script>load_stuff();</script>')
 <!DOCTYPE html>Some Text without any tags <!-- comments --><script>load_stuff();</script>
+
+# UTF-8 BOM
+>>> parse('\ufeff<!DOCTYPE html>Some Text without any tags <!-- comments -->', head_insert = '<script>load_stuff();</script>')
+\ufeff<!DOCTYPE html>Some Text without any tags <!-- comments --><script>load_stuff();</script>
 
 # no parse comments
 >>> parse('<html><!-- <a href="/foo.html"> --></html>')
@@ -387,6 +399,13 @@ r"""
 >>> parse('<html><a href="javascript:alert()"></a></html>', js_proxy=True)
 <html><a href="javascript:alert()"></a></html>
 
+# IE conditional
+>>> parse('<!--[if !IE]><html><![endif]--><a href="http://example.com/"><!--[if IE]><![endif]--><a href="http://example.com/"></html>')
+<!--[if !IE]><html><![endif]--><a href="/web/20131226101010/http://example.com/"><!--[if IE]><![endif]--><a href="/web/20131226101010/http://example.com/"></html>
+
+# IE conditional with invalid ']-->' ending, rewritten as ']>'
+>>> parse('<!--[if !IE]> --><html><![endif]--><a href="http://example.com/"><!--[if IE]><![endif]--><a href="http://example.com/"></html>')
+<!--[if !IE]> --><html><![endif]><a href="/web/20131226101010/http://example.com/"><!--[if IE]><![endif]--><a href="/web/20131226101010/http://example.com/"></html>
 
 
 # Test blank

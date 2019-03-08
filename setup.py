@@ -11,6 +11,13 @@ from pywb import __version__
 
 
 # ============================================================================
+def get_ldecription():
+    with open('README.rst', 'r') as fh:
+        long_description = fh.read()
+    return long_description
+
+
+# ============================================================================
 class PyTest(TestCommand):
     user_options = []
     def finalize_options(self):
@@ -58,7 +65,7 @@ def generate_git_hash_py(pkg, filename='git_hash.py'):
 def load_requirements(filename):
     with open(filename, 'rt') as fh:
         requirements = fh.read().rstrip().split('\n')
-    if (sys.version_info > (3, 0)):
+    if sys.version_info > (3, 0):
         requirements.append("py3AMF")
     else:
         requirements.append("pyAMF")
@@ -103,7 +110,7 @@ setup(
     author='Ilya Kreymer',
     author_email='ikreymer@gmail.com',
     description='Pywb Webrecorder web archive replay and capture tools',
-    long_description=long_description,
+    long_description=get_ldecription(),
     license='GPL',
     packages=find_packages(exclude=['tests_disabled']),
     zip_safe=False,
@@ -114,12 +121,13 @@ setup(
         'pytest',
         'WebTest',
         'pytest-cov',
-        'fakeredis',
+        'fakeredis<1.0',
         'mock',
         'urllib3',
         'werkzeug',
         'httpbin==0.5.0',
         'lxml',
+        'ujson'
        ],
     cmdclass={'test': PyTest},
     test_suite='',
