@@ -126,6 +126,10 @@ class RewriterApp(object):
 
                 wb_url.type = wb_url.REPLAY
 
+            elif 'pywb_proxy_default_timestamp' in environ:
+                wb_url.timestamp = environ['pywb_proxy_default_timestamp']
+                wb_url.type = wb_url.REPLAY
+
         return is_timegate
 
     def _get_prefer_mod(self, wb_url, environ, content_rw, is_proxy):
