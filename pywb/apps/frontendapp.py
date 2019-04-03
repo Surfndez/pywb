@@ -125,14 +125,25 @@ class FrontEndApp(object):
             # Add the proxy-fetch endpoint to enable PreservationWorker to make CORS fetches worry free in proxy mode
             self.url_map.add(Rule('/proxy-fetch/<path:url>', endpoint=self.proxy_fetch,
                                   methods=['GET', 'HEAD', 'OPTIONS']))
-        self.url_map.add(Rule(coll_prefix + '/<path:url>', endpoint=self.serve_content))
 
     def _init_coll_routes(self, coll_prefix):
+        """
+        Init and register the routes for specified collection path
+
+        :param coll_prefix: The collection path
+        :return:
+        """
         routes = self._make_coll_routes(coll_prefix)
         for route in routes:
             self.url_map.add(route)
 
     def _make_coll_routes(self, coll_prefix):
+        """
+        Make a list of standard collection routes
+
+        :param coll_prefix:
+        :return:
+        """
         routes = [
             Rule(coll_prefix + self.cdx_api_endpoint, endpoint=self.serve_cdx),
             Rule(coll_prefix + '/', endpoint=self.serve_coll_page),
