@@ -1,19 +1,14 @@
+from six.moves.urllib.parse import quote_plus
+from warcio.timeutils import PAD_14_DOWN, http_date_to_timestamp, pad_timestamp, timestamp_now, timestamp_to_http_date
+
 from pywb.utils.binsearch import iter_range
 from pywb.utils.canonicalize import canonicalize
-from pywb.utils.wbexception import NotFoundException, BadRequestException
-
-from warcio.timeutils import timestamp_to_http_date, http_date_to_timestamp
-from warcio.timeutils import timestamp_now, pad_timestamp, PAD_14_DOWN
-
+from pywb.utils.format import res_template
+from pywb.utils.memento import MementoUtils
+from pywb.utils.wbexception import BadRequestException, NotFoundException
 from pywb.warcserver.http import DefaultAdapters
 from pywb.warcserver.index.cdxobject import CDXObject
-
-from pywb.utils.format import ParamFormatter, res_template
-from pywb.utils.memento import MementoUtils
-
 from pywb.warcserver.index.cdxops import cdx_sort_closest
-
-from six.moves.urllib.parse import quote_plus
 
 try:
     from lxml import etree
@@ -211,14 +206,28 @@ class RemoteIndexSource(BaseIndexSource):
 
 # =============================================================================
 class XmlQueryIndexSource(BaseIndexSource):
-    EXACT_QUERY = 'type:urlquery url:'
-    PREFIX_QUERY = 'type:prefixquery url:'
+    """An index source class for XML files"""
+
+    EXACT_QUERY = 'type:urlquery url:'  # type: str
+    PREFIX_QUERY = 'type:prefixquery url:'  # type: str
 
     def __init__(self, query_api_url):
-        self.query_api_url = query_api_url
-        self.session = requests.session()
+        """Initialize the XmlQueryIndexSource instance
+
+        :param str query_api_url: The query api URL
+        """
+        self.query_api_url = query_api_url  # type: str
+        self.session = requests.session()  # type: requests.Session
 
     def load_index(self, params):
+        """Loads the xml query index based on the supplied params
+
+        :param dict[str, str] params: The query params
+        :return: A list or generator of cdx objects
+        :raises NotFoundException: If the query url is not found
+        or the results of the query returns no cdx entries
+        :raises BadRequestException: If the match type is not exact or prefix
+        """
         closest = params.get('closest')
 
         url = params.get('url', '')
@@ -233,8 +242,8 @@ class XmlQueryIndexSource(BaseIndexSource):
             raise BadRequestException('matchType={0} is not supported'.format(matchType=matchType))
 
         try:
-            #OpenSearch API requires double-escaping
-            #TODO: add option to not double escape if needed
+            # OpenSearch API requires double-escaping
+            # TODO: add option to not double escape if needed
             query_url = self.query_api_url + '?q=' + quote_plus(query + quote_plus(url))
             self.logger.debug("Running query: %s" % query_url)
             response = self.session.get(query_url)
@@ -267,6 +276,11 @@ class XmlQueryIndexSource(BaseIndexSource):
         return cdx_iter
 
     def prefix_query_iter(self, items):
+        """Returns an iterator yielding the results of performing a prefix query
+
+        :param items: The xml entry elements representing an query
+        :return: An iterator yielding the results of the query
+        """
         for item in items:
             url = self.gettext(item, 'originalurl')
             if not url:
@@ -277,6 +291,12 @@ class XmlQueryIndexSource(BaseIndexSource):
                 yield cdx
 
     def convert_to_cdx(self, item):
+        """Converts the etree element to an CDX object
+
+        :param item: The etree element to be converted
+        :return: The CDXObject representing the supplied etree element object
+        :rtype: CDXObject
+        """
         cdx = CDXObject()
         cdx['urlkey'] = self.gettext(item, 'urlkey')
         cdx['timestamp'] = self.gettext(item, 'capturedate')[:14]
@@ -289,6 +309,13 @@ class XmlQueryIndexSource(BaseIndexSource):
         return cdx
 
     def gettext(self, item, name):
+        """Returns the value of the supplied name
+
+        :param item: The etree element to be converted
+        :param name: The name of the field to get its value for
+        :return: The value of the field
+        :rtype: str
+        """
         elem = item.find(name)
         if elem is not None:
             return elem.text
@@ -297,12 +324,25 @@ class XmlQueryIndexSource(BaseIndexSource):
 
     @classmethod
     def init_from_string(cls, value):
+        """Creates and initializes a new instance of XmlQueryIndexSource
+        IFF the supplied value starts with xmlquery+
+
+        :param str value: The string by which to initialize the XmlQueryIndexSource
+        :return: The initialized XmlQueryIndexSource or None
+        :rtype: XmlQueryIndexSource|None
+        """
         if value.startswith('xmlquery+'):
             return cls(value[9:])
 
-
     @classmethod
     def init_from_config(cls, config):
+        """Creates and initializes a new instance of XmlQueryIndexSource
+        IFF the supplied dictionary contains the type key equal to xmlquery
+
+        :param dict[str, str] config:
+        :return: The initialized XmlQueryIndexSource or None
+        :rtype: XmlQueryIndexSource|None
+        """
         if config['type'] != 'xmlquery':
             return
 
